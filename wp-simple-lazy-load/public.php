@@ -22,8 +22,9 @@ class WPSimpleLazyLoadPublic {
 
 	public function add_lazy_loading_attributes( $content ) {
 		$DOM = new DomDocument();
-		return preg_replace_callback( '/<img ((?!(?:[^<]*)loading=)[^<]*)>/', function( $matches ) use ( $DOM ) {
-			@$DOM->loadHTML( $matches[0] );
+		$html_wrapper = '<!DOCTYPE html><html><head><meta charset="' . ini_get( 'default_charset' ) . '" /></head><body>%s</body></html>';
+		return preg_replace_callback( '/<img ((?!(?:[^<]*)loading=)[^<]*)>/u', function( $matches ) use ( $DOM, $html_wrapper ) {
+			@$DOM->loadHTML( sprintf( $html_wrapper, $matches[0] ) );
 			$imgDOM = $DOM->getElementsByTagName( 'img' );
 			if( empty( $imgDOM[0] ) )
 				return $matches[0];

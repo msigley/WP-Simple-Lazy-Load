@@ -2,15 +2,16 @@
 /*
 Plugin Name: WP Simple Lazy Load
 Plugin URI: https://github.com/msigley
-Description: Implements native lazying loading for image content.
-Version: 1.0.2
+Description: Implements lazying loading for image and iframe content.
+Version: 1.0.3
+Requires at least: 4.8.0
 Author: Matthew Sigley
 License: GPL2
 */
 
 //TODO: Add custom theme template support
 class WPSimpleLazyLoad {
-	private static $version = '1.0.2';
+	private static $version = '1.0.0';
 	private static $object = null;
 	private static $contruct_args = array( 'DEFINE_NAME' => 'arg1_name', 'arg2_name' );
 	private static $flipped_construct_args = false;
