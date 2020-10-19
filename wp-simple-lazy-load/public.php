@@ -35,7 +35,7 @@ class WPSimpleLazyLoadPublic {
 
 			$imgDOM->setAttribute( 'loading', 'lazy' );
 			if( empty( $imgDOM->getAttribute( 'style' ) ) && empty( $imgDOM->getAttribute( 'onload' ) ) ) {
-				$imgDOM->setAttribute( 'style', "background: #CCCCCC;" );
+				$imgDOM->setAttribute( 'style', "background:rgba(153,153,153,0.2);" );
 				$imgDOM->setAttribute( 'onload', "this.style.background='transparent';" );
 			}
 			

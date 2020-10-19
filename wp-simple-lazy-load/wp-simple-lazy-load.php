@@ -3,7 +3,7 @@
 Plugin Name: WP Simple Lazy Load
 Plugin URI: https://github.com/msigley
 Description: Implements lazying loading for image and iframe content.
-Version: 1.0.3
+Version: 1.0.4
 Requires at least: 4.8.0
 Author: Matthew Sigley
 License: GPL2
