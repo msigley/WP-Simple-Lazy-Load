@@ -17,30 +17,35 @@ class WPSimpleLazyLoadPublic {
 	}
 
 	public function ob_end_flush() {
+		libxml_use_internal_errors( true );
 		ob_end_flush();
+		libxml_use_internal_errors( false );
 	}
 
 	public function add_lazy_loading_attributes( $content ) {
 		$DOM = new DomDocument();
-		$html_wrapper = '<!DOCTYPE html><html><head><meta charset="' . ini_get( 'default_charset' ) . '" /></head><body>%s</body></html>';
-		return preg_replace_callback( '/<img ((?!(?:[^<]*)loading=)[^<]*)>/u', function( $matches ) use ( $DOM, $html_wrapper ) {
-			@$DOM->loadHTML( sprintf( $html_wrapper, $matches[0] ) );
-			$imgDOM = $DOM->getElementsByTagName( 'img' );
-			if( empty( $imgDOM[0] ) )
+		return preg_replace_callback( '/<i(?:mg|frame) (?:(?!(?:[^<]*)loading=)[^<]*)>/u', function( $matches ) use ( &$DOM ) {
+			@$DOM->loadHTML( $matches[0], LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_COMPACT | LIBXML_NOBLANKS );
+			libxml_clear_errors();
+			$elementDOM = $DOM->getElementsByTagName( 'img' );
+			if( $elementDOM->length < 1 )
+				$elementDOM = $DOM->getElementsByTagName( 'iframe' );
+			if( $elementDOM->length < 1 )
 				return $matches[0];
 
-			$imgDOM = $imgDOM[0];
-			if( substr( $imgDOM->getAttribute( 'src' ), 0, 5 ) == 'data:' ) // Don't bother lazy loading inline images
+			$elementDOM = &$elementDOM[0];
+			$src = $elementDOM->getAttribute( 'src' );
+			if( '' === $src || substr( $src, 0, 5 ) == 'data:' ) // Don't data urls. They are embeded in the source.
 				return $matches[0];
 
-			$imgDOM->setAttribute( 'loading', 'lazy' );
-			if( empty( $imgDOM->getAttribute( 'style' ) ) && empty( $imgDOM->getAttribute( 'onload' ) ) ) {
-				$imgDOM->setAttribute( 'style', "background:rgba(153,153,153,0.2);" );
-				$imgDOM->setAttribute( 'onload', "this.style.background='transparent';" );
+			if( !$elementDOM->hasAttribute( 'style' ) && !$elementDOM->hasAttribute( 'onload' ) ) {
+				$elementDOM->setAttribute( 'style', "background:rgba(153,153,153,0.2);" );
+				$elementDOM->setAttribute( 'onload', "this.style.background='transparent';" );
 			}
+			$elementDOM->setAttribute( 'loading', 'lazy' );
 			
-			$output = @$DOM->saveHTML( $imgDOM );
-			if( empty( $output ) )
+			$output = @$DOM->saveHTML();
+			if( false === $output )
 				return $matches[0];
 			return $output;
 		}, $content );
@@ -48,15 +53,5 @@ class WPSimpleLazyLoadPublic {
 
 	public function enqueue_css_js() {
 		wp_enqueue_script( 'wp-simple-lazy-load-helper', plugins_url( '/js/lazy-load-helper.js', __FILE__ ), array( 'jquery' ), $this->main->get_version(), true );
-	}
-
-	public function enqueue_shortcode_css_js( $content ) {
-		if( $this->enqueued_shortcode_css_js )
-			return;
-
-		$this->enqueued_shortcode_css_js = true;
-
-		wp_enqueue_style( 'example-css', plugins_url( '/css/file.css', __FILE__ ), $this->main->get_version(), true );
-		wp_enqueue_script( 'example-js', plugins_url( '/js/file.js', __FILE__ ), $this->main->get_version(), true );
 	}
 }
